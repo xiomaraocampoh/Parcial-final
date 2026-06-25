@@ -1,0 +1,7 @@
+FROM python:3.11-slim
+WORKDIR /app
+RUN pip install uv
+COPY requirements.txt .
+RUN uv pip install --system -r requirements.txt pytest pytest-cov httpx testcontainers playwright
+COPY . .
+CMD ["pytest", "-v"]
