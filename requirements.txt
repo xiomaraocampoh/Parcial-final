@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+pydantic
+httpx
+testcontainers[postgres]
+pytest
+pytest-cov
+playwright
