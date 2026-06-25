@@ -1,10 +1,39 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from src.database.config import get_db
 from src.database.repositorio import ReservasRepositorio
 from pydantic import BaseModel
 
 app = FastAPI()
+
+_HTML = """<!DOCTYPE html><html><body>
+<input data-testid="input-email-cliente" type="email">
+<select data-testid="select-zona-evento">
+  <option value="VIP">VIP</option>
+  <option value="General">General</option>
+</select>
+<input data-testid="input-cantidad-asientos" type="number">
+<button data-testid="btn-confirmar-reserva" type="button">Confirmar</button>
+<div data-testid="seccion-resumen-total" style="display:none"></div>
+<script>
+document.querySelector('[data-testid="btn-confirmar-reserva"]').addEventListener('click',async()=>{
+  const email=document.querySelector('[data-testid="input-email-cliente"]').value;
+  const zona=document.querySelector('[data-testid="select-zona-evento"]').value;
+  const cantidad=parseInt(document.querySelector('[data-testid="input-cantidad-asientos"]').value);
+  await fetch('/reservas/evento-frontend-test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cliente_email:email,zona:zona,cantidad:cantidad})});
+  const res=await fetch('/reservas/evento-frontend-test/resumen');
+  const data=await res.json();
+  const s=document.querySelector('[data-testid="seccion-resumen-total"]');
+  s.textContent=data.total_recaudado.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g,'.');
+  s.style.display='block';
+});
+</script>
+</body></html>"""
+
+@app.get("/reservas", response_class=HTMLResponse)
+def frontend_reservas():
+    return _HTML
 
 class ReservaInput(BaseModel):
     cliente_email: str
